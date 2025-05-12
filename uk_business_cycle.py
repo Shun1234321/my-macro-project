@@ -5,6 +5,7 @@ import statsmodels.api as sm
 import pandas_datareader as pdr
 import numpy as np
 
+
 # set the gdp code and the start and end dates for the data
 gdp_code = 'NGDPRSAXDCGBQ' #the UK
 start_date = '1955-01-01'
@@ -31,3 +32,22 @@ for lam in lambdas:
 
     print(f"Trend(λ={lam}) summary:")
     print(trends[lam].describe())
+
+
+# Plot the original time series data
+plt.plot(log_gdp, label="Original GDP (in log)")
+
+# Plot the trend components
+for lam in lambdas:
+    plt.plot(trends[lam], label=f"Trend (λ={lam})")
+
+# Add a legend, labels, and a title
+plt.legend()
+plt.xlabel("Year")
+plt.ylabel("Log of real GDP")
+plt.title("Comparison of Original Data and Trend Components")
+
+# show the plot
+plt.show()
+
+
