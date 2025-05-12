@@ -34,6 +34,10 @@ for lam in lambdas:
     print(trends[lam].describe())
 
 
+#-----trends-----
+# Prepare the figure for plotting
+plt.figure(figsize=(12,6))
+
 # Plot the original time series data
 plt.plot(log_gdp, label="Original GDP (in log)")
 
@@ -43,11 +47,25 @@ for lam in lambdas:
 
 # Add a legend, labels, and a title
 plt.legend()
-plt.xlabel("Year")
+plt.xlabel("Date")
 plt.ylabel("Log of real GDP")
 plt.title("Comparison of Original Data and Trend Components")
 
+
+# -----cycles-----
+# Prepare the figure for plotting
+plt.figure(figsize=(12,6))
+
+# Plot the cycle components
+for lam in lambdas:
+    plt.plot(cycles[lam], label=f"Cycle (λ={lam})")
+
+# Add a legend, labels, and a title
+plt.legend()
+plt.xlabel("Date")
+plt.ylabel("Cyclical Component")
+plt.title("Comparison of Cyclical Components with Different Lambda Values")
+
+
 # show the plot
 plt.show()
-
-
