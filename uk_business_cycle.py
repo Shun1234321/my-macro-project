@@ -5,23 +5,29 @@ import statsmodels.api as sm
 import pandas_datareader as pdr
 import numpy as np
 
-# set the start and end dates for the data
+# set the gdp code and the start and end dates for the data
+gdp_code = 'NGDPRSAXDCGBQ' #the UK
 start_date = '1955-01-01'
 end_date = '2022-01-01'
 
 # download the data from FRED using pandas_datareader
-gdp = web.DataReader('GDPC1', 'fred', start_date, end_date)
+gdp = web.DataReader(gdp_code, 'fred', start_date, end_date)
 log_gdp = np.log(gdp)
 
 # apply a Hodrick-Prescott filter to the data to extract the cyclical component
-cycle, trend = sm.tsa.filters.hpfilter(log_gdp, lamb=1600)
+lambdas = [10, 100, 1600]
+trends = {}
+cycles = {}
 
-# Plot the original time series data
-plt.plot(log_gdp, label="Original GDP (in log)")
+for lam in lambdas:
+    cycle, trend = sm.tsa.filters.hpfilter(log_gdp, lamb=lam)
+    trends[lam] = trend
+    cycles[lam] = cycle
 
-# Plot the trend component
-plt.plot(trend, label="Trend")
+# analyze the impact of different lambda values
+for lam in lambdas:
+    print(f"Cycle(λ={lam}) summary:")
+    print(cycles[lam].describe())
 
-# Add a legend and show the plot
-plt.legend()
-plt.show()
+    print(f"Trend(λ={lam}) summary:")
+    print(trends[lam].describe())
