@@ -46,4 +46,17 @@ print(f'  Japan  : {jp_std:.4f}\n')
 
 #循環成分の相関係数を表示
 print('--- UKとJapanの循環成分の相関係数 ---')
-print(f'  r = {corr:.4f}')
+print(f'r = {corr:.4f}')
+
+
+# グラフ描画
+plt.figure(figsize=(10, 6))
+plt.plot(uk_cycle.index, uk_cycle, label='UK Cycle (HP filter)')
+plt.plot(jp_cycle.index, jp_cycle, label='Japan Cycle (HP filter)')
+plt.title('HP-Filtered Cyclical Components of Real GDP\n(Quarterly, log scale)')
+plt.xlabel('Year')
+plt.ylabel('Deviation from Trend (log)')
+plt.legend()
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.tight_layout()
+plt.show()
