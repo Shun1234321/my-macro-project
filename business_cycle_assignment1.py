@@ -31,4 +31,6 @@ uk_cycle, uk_trend = sm.tsa.filters.hpfilter(uk_log_gdp, lamb=1600)
 jp_cycle, jp_trend = sm.tsa.filters.hpfilter(jp_log_gdp, lamb=1600)
 
 
-
+# 統計量の計算
+uk_std  = uk_cycle.std().iloc[0]
+jp_std  = jp_cycle.std().iloc[0]
