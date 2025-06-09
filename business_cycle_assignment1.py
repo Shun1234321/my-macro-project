@@ -44,3 +44,6 @@ print('--- 循環成分の標準偏差 ---')
 print(f'  UK     : {uk_std:.4f}')
 print(f'  Japan  : {jp_std:.4f}\n')
 
+#循環成分の相関係数を表示
+print('--- UKとJapanの循環成分の相関係数 ---')
+print(f'  r = {corr:.4f}')
