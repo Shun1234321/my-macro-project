@@ -32,5 +32,8 @@ jp_cycle, jp_trend = sm.tsa.filters.hpfilter(jp_log_gdp, lamb=1600)
 
 
 # 統計量の計算
+#　標準偏差
 uk_std  = uk_cycle.std().iloc[0]
 jp_std  = jp_cycle.std().iloc[0]
+# 相関係数
+corr    = uk_cycle.corr(jp_cycle).iloc[0, 0]
