@@ -29,3 +29,8 @@ data['y_n'] = data['rgdpna'] / data['emp']  # y = Y / L
 data['k'] = data['rkna']  / data['emp']    # k = K / L
 data['hours'] = data['emp'] * data['avh']  # H = L × 労働時間
 
+
+#対数を取る
+data['ln_y'] = np.log(data['y_n']) # ln(y)
+data['ln_k'] = np.log(data['k']) # ln(k)
+
