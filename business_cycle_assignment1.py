@@ -6,19 +6,19 @@ import pandas_datareader as pdr
 import numpy as np
 
 
-# set the gdp code and the start and end dates for the data
+# Set the GDP codes and the start and end dates for the data
 uk_gdp_code = 'NGDPRSAXDCGBQ' #the UK
 jp_gdp_code = 'JPNRGDPEXP'
 start_date = '1994-01-01'
 end_date = '2022-01-01'
 
 
-# download the data from FRED using pandas_datareader
-#UK
+# Download the data from FRED using pandas_datareader
+# UK
 uk_gdp = web.DataReader(uk_gdp_code, 'fred', start_date, end_date)
 uk_log_gdp = np.log(uk_gdp)
 
-#JP
+#Japan
 jp_gdp = web.DataReader(jp_gdp_code, 'fred', start_date, end_date)
 jp_log_gdp = np.log(jp_gdp)
 
@@ -27,29 +27,29 @@ jp_log_gdp = np.log(jp_gdp)
 #UK
 uk_cycle, uk_trend = sm.tsa.filters.hpfilter(uk_log_gdp, lamb=1600) #リポジトリにあるuk_business_cycle.pyで、lamb=10, 100, 1600を比較の上、1600を選択。
 
-#JP
+#Japan
 jp_cycle, jp_trend = sm.tsa.filters.hpfilter(jp_log_gdp, lamb=1600)
 
 
-# 統計量の計算
-#　標準偏差
+# Compute statistics
+# Standard deviations of cyclical components
 uk_std = uk_cycle.std()
 jp_std = jp_cycle.std()
-# 相関係数
+# Correlation coefficient between UK and Japan cycles
 corr = uk_cycle.corr(jp_cycle)
 
 
-#循環成分の標準偏差を表示
+# Display standard deviations
 print('--- 循環成分の標準偏差 ---')
 print(f'  UK     : {uk_std:.4f}')
 print(f'  Japan  : {jp_std:.4f}\n')
 
-#循環成分の相関係数を表示
+# Display correlation coefficient
 print('--- UKとJapanの循環成分の相関係数 ---')
 print(f'r = {corr:.4f}')
 
 
-# グラフ描画
+# Plot cyclical components
 plt.figure(figsize=(10, 6))
 plt.plot(uk_cycle.index, uk_cycle, label='UK Cycle (HP filter)')
 plt.plot(jp_cycle.index, jp_cycle, label='Japan Cycle (HP filter)')
