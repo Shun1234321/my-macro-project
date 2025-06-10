@@ -22,13 +22,14 @@ data = data[relevant_cols].dropna()
 # αを固定値0.3に設定
 data['alpha_fixed'] = 0.3
 
-data['hours'] = data['emp'] * data['avh']  # L
+data['hours'] = data['emp'] * data['avh'] # 労働時間 L
+data['y_l']   = data['rgdpna'] / data['hours'] # Y/L：１時間あたりの付加価値
 data['lab_term'] = data['hours'] / data['pop']  # L/N
 
 # 対数を取る
-data['ln_y'] = np.log(data['rgdpna'] / data['emp'])    # ln(Y/N)
-data['ln_k'] = np.log(data['rkna'] / data['hours'])             # ln(K/L)
-data['ln_a'] = data['ln_y'] - data['alpha_fixed'] * data['ln_k']      # ln(A)
+data['ln_y']  = np.log(data['y_l']) # ln(Y/L)
+data['ln_k'] = np.log(data['rkna'] / data['hours']) # ln(K/L)
+data['ln_a'] = data['ln_y'] - data['alpha_fixed'] * data['ln_k'] # ln(A)
 
 # 2) 年次差分（≒成長率）を取る
 data['g_y'] = data.groupby('countrycode')['ln_y'].diff()  # ΔlnY/L
