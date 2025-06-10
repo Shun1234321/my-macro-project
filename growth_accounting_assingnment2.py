@@ -19,14 +19,24 @@ relevant_cols = ['countrycode', 'country', 'year', 'rgdpna', 'rkna', 'pop', 'emp
 data = data[relevant_cols].dropna()
 
 # Calculate additional variables
-data['alpha'] = 1 - data['labsh']
+# αを固定値0.3に設定
+data['alpha_fixed'] = 0.3
+# 対数を取る
 data['ln_y'] = np.log(data['rgdpna'] / data['emp'])    # ln(Y/N)
-data['hours'] = data['emp'] * data['avh']  # L
 data['ln_k'] = np.log(data['rkna'] / data['hours'])             # ln(K/L)
-data['ln_a'] = data['ln_y'] - data['alpha'] * data['ln_k']      # ln(A)
+data['ln_a'] = data['ln_y'] - data['alpha_fixed'] * data['ln_k']      # ln(A)
+
+data['hours'] = data['emp'] * data['avh']  # L
 data['lab_term'] = data['hours'] / data['pop']  # L/N
+
+# 2) 年次差分（≒成長率）を取る
+data['g_y'] = data.groupby('countrycode')['ln_y'].diff()  # ΔlnY/L
+data['g_k'] = data.groupby('countrycode')['ln_k'].diff()  # ΔlnK/L
+data['g_a'] = data.groupby('countrycode')['ln_a'].diff()  # ΔlnA
+
+
 data = data.sort_values('year').groupby('countrycode').apply(lambda x: x.assign(
-    alpha=1 - x['labsh'],
+    alpha = data['alpha_fixed'].iloc[0],
     y_n_shifted=100 * x['y_n'] / x['y_n'].iloc[0],
     tfp_term_shifted=100 * x['tfp_term'] / x['tfp_term'].iloc[0],
     cap_term_shifted=100 * x['cap_term'] / x['cap_term'].iloc[0],
@@ -50,8 +60,8 @@ def calculate_growth_rates(country_data):
 
     g_a = ((end_data['tfp_term'] / start_data['tfp_term']) ** (1/years) - 1) * 100
 
-    alpha_avg = (start_data['alpha'] + end_data['alpha']) / 2.0
-    capital_deepening_contrib = alpha_avg * g_k
+    alpha = country_data['alpha_fixed'].iloc[0]
+    capital_deepening_contrib = alpha * g_k
     tfp_growth_calculated = g_a
     
     tfp_share = (tfp_growth_calculated / g_y)
