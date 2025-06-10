@@ -1,8 +1,10 @@
 import pandas as pd
 import numpy as np
 
+# Load Penn World Table 9.0 data from the GGDC website
 pwt90 = pd.read_stata('https://www.rug.nl/ggdc/docs/pwt90.dta')
 
+# Define the list of OECD countries to include in the analysis
 oecd_countries = [
     "Australia", "Austria", "Belgium", "Canada", "Denmark", "Finland",
     "France", "Germany", "Greece", "Iceland", "Ireland", "Italy", "Japan",
@@ -10,31 +12,33 @@ oecd_countries = [
     "Switzerland", "United Kingdom", "United States"
 ]
 
+# Filter data for selected countries and the period 1990–2019
 data = pwt90[
     pwt90['country'].isin(oecd_countries) &
     pwt90['year'].between(1990, 2019)
 ]
 
+# Select relevant columns and drop any rows with missing values
 relevant_cols = ['countrycode', 'country', 'year', 'rgdpna', 'rkna', 'pop', 'emp', 'avh', 'labsh', 'rtfpna']
 data = data[relevant_cols].dropna()
 
 
-# === α変動版 ===
 
+# === Variable-alpha version ===
 
-# αを固定値0.3に設定
+# Calculate a country-specific capital share (alpha) as 1 minus the labor share
 data['alpha_var'] = 1 - data['labsh']
 
-data['hours'] = data['emp'] * data['avh'] # 労働時間 L
-data['y_l']   = data['rgdpna'] / data['hours'] # Y/L：１時間あたりの付加価値
+data['hours'] = data['emp'] * data['avh'] # L
+data['y_l']   = data['rgdpna'] / data['hours'] # Y/L
 data['lab_term'] = data['hours'] / data['pop']  # L/N
 
-# 対数を取る
+# Take natural logs of variables for growth accounting
 data['ln_y']  = np.log(data['y_l']) # ln(Y/L)
 data['ln_k'] = np.log(data['rkna'] / data['hours']) # ln(K/L)
 data['ln_a'] = data['ln_y'] - data['alpha_var'] * data['ln_k'] # ln(A)
 
-# 2) 年次差分（≒成長率）を取る
+# Compute annual changes (approximate growth rates) of the log variables
 data['g_y'] = data.groupby('countrycode')['ln_y'].diff()  # ΔlnY/L
 data['g_k'] = data.groupby('countrycode')['ln_k'].diff()  # ΔlnK/L
 data['g_a'] = data.groupby('countrycode')['ln_a'].diff()  # ΔlnA
@@ -43,6 +47,7 @@ data['g_a'] = data.groupby('countrycode')['ln_a'].diff()  # ΔlnA
 
 def calculate_growth_rates(country_data):
    
+    # Calculate average annual growth rates and growth accounting shares over the full sample period for one country.
     start = country_data.iloc[0]
     end = country_data.iloc[-1]
     n_years = end['year'] - start['year']
@@ -67,9 +72,11 @@ def calculate_growth_rates(country_data):
     })
 
 
+# Apply the growth accounting function to each country
 results_df = data.groupby('country').apply(calculate_growth_rates)
 results_df = results_df.reset_index().rename(columns={'country': 'Country'})
 
+# Compute the cross-country average of each metric
 avg_row_data = {
     'Country': 'Average',
     'Growth Rate': round(results_df['Growth Rate'].mean(), 2),
@@ -80,27 +87,31 @@ avg_row_data = {
 }
 results_df = pd.concat([results_df, pd.DataFrame([avg_row_data])], ignore_index=True)
 
+# Display the variable-alpha growth accounting table
 print("\nGrowth Accounting in OECD Countries: 1990-2019 period (alpha_var)")
 print("="*85)
 print(results_df.to_string(index=False))
 
 
 
-# === α固定（0.3）版 ===
 
-# αを固定値0.3に設定
+
+# === Fixed-alpha (0.3) version ===
+
+# Set the capital share (alpha) to a constant 0.3 for all observations
 data['alpha_fixed'] = 0.3
 
-data['hours'] = data['emp'] * data['avh'] # 労働時間 L
-data['y_l']   = data['rgdpna'] / data['hours'] # Y/L：１時間あたりの付加価値
+# Recompute labor hours, output per hour, and labor term (L/N)
+data['hours'] = data['emp'] * data['avh'] # L
+data['y_l']   = data['rgdpna'] / data['hours'] # Y/L
 data['lab_term'] = data['hours'] / data['pop']  # L/N
 
-# 対数を取る
+# Take logs with fixed alpha
 data['ln_y']  = np.log(data['y_l']) # ln(Y/L)
 data['ln_k'] = np.log(data['rkna'] / data['hours']) # ln(K/L)
 data['ln_a'] = data['ln_y'] - data['alpha_fixed'] * data['ln_k'] # ln(A)
 
-# 2) 年次差分（≒成長率）を取る
+# Compute annual changes again
 data['g_y'] = data.groupby('countrycode')['ln_y'].diff()  # ΔlnY/L
 data['g_k'] = data.groupby('countrycode')['ln_k'].diff()  # ΔlnK/L
 data['g_a'] = data.groupby('countrycode')['ln_a'].diff()  # ΔlnA
@@ -109,6 +120,7 @@ data['g_a'] = data.groupby('countrycode')['ln_a'].diff()  # ΔlnA
 
 def calculate_growth_rates(country_data):
    
+   #Calculate average annual growth rates and growth accounting shares for the fixed-alpha case.
     start = country_data.iloc[0]
     end = country_data.iloc[-1]
     n_years = end['year'] - start['year']
@@ -133,9 +145,11 @@ def calculate_growth_rates(country_data):
     })
 
 
+# Apply the fixed-alpha growth accounting function
 results_df = data.groupby('country').apply(calculate_growth_rates)
 results_df = results_df.reset_index().rename(columns={'country': 'Country'})
 
+# Compute the average row for fixed-alpha results
 avg_row_data = {
     'Country': 'Average',
     'Growth Rate': round(results_df['Growth Rate'].mean(), 2),
@@ -146,8 +160,10 @@ avg_row_data = {
 }
 results_df = pd.concat([results_df, pd.DataFrame([avg_row_data])], ignore_index=True)
 
+# Display the fixed-alpha growth accounting table
 print("\nGrowth Accounting in OECD Countries: 1990-2019 period (alpha fixed)")
 print("="*85)
 print(results_df.to_string(index=False))
 
+#comment
 print("【考えたこと】αを変動させると、TFP成長がマイナスになる国が多い。\n安定的、整合的に国ごとで比較したい場合は、αは固定した方が良いと考えた。")
