@@ -9,7 +9,7 @@ import numpy as np
 # set the gdp code and the start and end dates for the data
 uk_gdp_code = 'NGDPRSAXDCGBQ' #the UK
 jp_gdp_code = 'JPNRGDPEXP'
-start_date = '1955-01-01'
+start_date = '1994-01-01'
 end_date = '2022-01-01'
 
 
