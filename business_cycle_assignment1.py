@@ -25,7 +25,7 @@ jp_log_gdp = np.log(jp_gdp)
 
 # apply a Hodrick-Prescott filter to the data to extract the cyclical component
 #UK
-uk_cycle, uk_trend = sm.tsa.filters.hpfilter(uk_log_gdp, lamb=1600)
+uk_cycle, uk_trend = sm.tsa.filters.hpfilter(uk_log_gdp, lamb=1600) #リポジトリにあるuk_business_cycle.pyで、lamb=10, 100, 1600を比較の上、1600を選択。
 
 #JP
 jp_cycle, jp_trend = sm.tsa.filters.hpfilter(jp_log_gdp, lamb=1600)

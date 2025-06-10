@@ -18,7 +18,76 @@ data = pwt90[
 relevant_cols = ['countrycode', 'country', 'year', 'rgdpna', 'rkna', 'pop', 'emp', 'avh', 'labsh', 'rtfpna']
 data = data[relevant_cols].dropna()
 
-# Calculate additional variables
+
+# === α変動版 ===
+
+
+# αを固定値0.3に設定
+data['alpha_var'] = 1 - data['labsh']
+
+data['hours'] = data['emp'] * data['avh'] # 労働時間 L
+data['y_l']   = data['rgdpna'] / data['hours'] # Y/L：１時間あたりの付加価値
+data['lab_term'] = data['hours'] / data['pop']  # L/N
+
+# 対数を取る
+data['ln_y']  = np.log(data['y_l']) # ln(Y/L)
+data['ln_k'] = np.log(data['rkna'] / data['hours']) # ln(K/L)
+data['ln_a'] = data['ln_y'] - data['alpha_var'] * data['ln_k'] # ln(A)
+
+# 2) 年次差分（≒成長率）を取る
+data['g_y'] = data.groupby('countrycode')['ln_y'].diff()  # ΔlnY/L
+data['g_k'] = data.groupby('countrycode')['ln_k'].diff()  # ΔlnK/L
+data['g_a'] = data.groupby('countrycode')['ln_a'].diff()  # ΔlnA
+
+
+
+def calculate_growth_rates(country_data):
+   
+    start = country_data.iloc[0]
+    end = country_data.iloc[-1]
+    n_years = end['year'] - start['year']
+
+    g_y = (end['ln_y'] - start['ln_y']) / n_years * 100
+    g_k = (end['ln_k'] - start['ln_k']) / n_years * 100
+    g_a = (end['ln_a'] - start['ln_a']) / n_years * 100
+
+    alpha = country_data['alpha_var'].mean()
+    capital_deepening_contrib = alpha * g_k
+    tfp_growth_calculated = g_a
+    
+    tfp_share = (tfp_growth_calculated / g_y)
+    cap_share = (capital_deepening_contrib / g_y)
+
+    return  pd.Series({
+        'Growth Rate': round(g_y, 2),
+        'TFP Growth': round(tfp_growth_calculated, 2),
+        'Capital Deepening': round(capital_deepening_contrib, 2),
+        'TFP Share': round(tfp_share, 2),
+        'Capital Share': round(cap_share, 2)
+    })
+
+
+results_df = data.groupby('country').apply(calculate_growth_rates)
+results_df = results_df.reset_index().rename(columns={'country': 'Country'})
+
+avg_row_data = {
+    'Country': 'Average',
+    'Growth Rate': round(results_df['Growth Rate'].mean(), 2),
+    'TFP Growth': round(results_df['TFP Growth'].mean(), 2),
+    'Capital Deepening': round(results_df['Capital Deepening'].mean(), 2),
+    'TFP Share': round(results_df['TFP Share'].mean(), 2),
+    'Capital Share': round(results_df['Capital Share'].mean(), 2)
+}
+results_df = pd.concat([results_df, pd.DataFrame([avg_row_data])], ignore_index=True)
+
+print("\nGrowth Accounting in OECD Countries: 1990-2019 period (alpha_var)")
+print("="*85)
+print(results_df.to_string(index=False))
+
+
+
+# === α固定（0.3）版 ===
+
 # αを固定値0.3に設定
 data['alpha_fixed'] = 0.3
 
@@ -77,7 +146,6 @@ avg_row_data = {
 }
 results_df = pd.concat([results_df, pd.DataFrame([avg_row_data])], ignore_index=True)
 
-print("\nGrowth Accounting in OECD Countries: 1990-2019 period")
+print("\nGrowth Accounting in OECD Countries: 1990-2019 period (alpha fixed)")
 print("="*85)
 print(results_df.to_string(index=False))
-
