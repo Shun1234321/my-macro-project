@@ -149,3 +149,5 @@ results_df = pd.concat([results_df, pd.DataFrame([avg_row_data])], ignore_index=
 print("\nGrowth Accounting in OECD Countries: 1990-2019 period (alpha fixed)")
 print("="*85)
 print(results_df.to_string(index=False))
+
+print("【考えたこと】αを変動させると、TFP成長がマイナスになる国が多い。\n安定的、整合的に国ごとで比較したい場合は、αは固定した方が良いと考えた。")
