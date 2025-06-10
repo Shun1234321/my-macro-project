@@ -40,9 +40,13 @@ data['g_a'] = data.groupby('countrycode')['ln_a'].diff()  # ΔlnA
 
 def calculate_growth_rates(country_data):
    
-    g_y = country_data['g_y'].mean() * 100
-    g_k = country_data['g_k'].mean() * 100
-    g_a = country_data['g_a'].mean() * 100
+    start = country_data.iloc[0]
+    end = country_data.iloc[-1]
+    n_years = end['year'] - start['year']
+
+    g_y = (end['ln_y'] - start['ln_y']) / n_years * 100
+    g_k = (end['ln_k'] - start['ln_k']) / n_years * 100
+    g_a = (end['ln_a'] - start['ln_a']) / n_years * 100
 
     alpha = country_data['alpha_fixed'].iloc[0]
     capital_deepening_contrib = alpha * g_k
