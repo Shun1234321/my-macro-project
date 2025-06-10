@@ -18,3 +18,7 @@ data = pwt90[
     pwt90['country'].isin(oecd_countries) &
     pwt90['year'].between(1990, 2019)
 ]
+
+# 使うデータの取り出し
+relevant_cols = ['countrycode', 'country', 'year', 'rgdpna', 'rkna', 'pop', 'emp', 'avh', 'labsh', 'rtfpna']
+data = data[relevant_cols].dropna()
