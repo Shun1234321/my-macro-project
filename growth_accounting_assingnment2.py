@@ -22,3 +22,10 @@ data = pwt90[
 # 使うデータの取り出し
 relevant_cols = ['countrycode', 'country', 'year', 'rgdpna', 'rkna', 'pop', 'emp', 'avh', 'labsh', 'rtfpna']
 data = data[relevant_cols].dropna()
+
+# α,y, k, Hを求める
+data['alpha'] = 1 - data['labsh'] # 資本分配率 α
+data['y_n'] = data['rgdpna'] / data['emp']  # y = Y / L
+data['k'] = data['rkna']  / data['emp']    # k = K / L
+data['hours'] = data['emp'] * data['avh']  # H = L × 労働時間
+
